@@ -20,7 +20,7 @@ pipeline {
         stage('Build Backend') {
             steps {
                 dir('expensetracker') {  // Ovdje je promenjeno u pravi folder
-                    sh 'mvn clean install'
+                    sh 'mvn clean install' -Dmaven.compiler.arguments="--add-exports=jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED"'
                 }
             }
         }
