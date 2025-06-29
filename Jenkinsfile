@@ -7,15 +7,16 @@ pipeline {
     }
 
     stages {
-        stage('Provera strukture') {
+        // Stage za proveru strukture direktorijuma
+        stage('Verifikacija direktorijuma') {
             steps {
-                sh 'echo "SADRŽAJ ROOT-a:"'
-                sh 'ls -lah'
-                sh 'echo "PRONALAZAK pom.xml:"'
-                sh 'find . -name "pom.xml"'
+                sh 'echo "Trenutni direktorijum:"'
+                sh 'pwd'
+                sh 'ls -l'
             }
         }
 
+        // Stage za build backend-a (Spring Boot)
         stage('Build Backend') {
             steps {
                 dir('angular9-springboot-expensetracker') {
@@ -24,15 +25,17 @@ pipeline {
             }
         }
 
+        // Stage za build frontend-a (Angular)
         stage('Build Frontend') {
             steps {
                 dir('angular9-springboot-expensetracker') {
                     sh 'npm install'
-                    sh 'npx ng build --prod'
+                    sh 'ng build --prod'
                 }
             }
         }
 
+        // Stage za pokretanje Spring Boot aplikacije
         stage('Run Spring Boot') {
             steps {
                 dir('angular9-springboot-expensetracker') {
@@ -41,6 +44,7 @@ pipeline {
             }
         }
 
+        // Stage za health check aplikacije
         stage('Health Check') {
             steps {
                 script {
