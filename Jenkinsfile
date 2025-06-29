@@ -19,7 +19,7 @@ pipeline {
         // Stage za build backend-a (Spring Boot)
         stage('Build Backend') {
             steps {
-                dir('expensetracker') {  // Ovdje je promenjeno u pravi folder
+                dir('angular9-springboot-expensetracker/expensetracker') {  // Putanja do backend direktorijuma
                     sh 'mvn clean install -Dmaven.compiler.arguments="--add-exports=jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED"'
                 }
             }
@@ -28,9 +28,19 @@ pipeline {
         // Stage za build frontend-a (Angular)
         stage('Build Frontend') {
             steps {
-                dir('angular9-springboot-expensetracker/expense-tracker-frontend') {
-                    sh 'npm install'
-                    sh 'npx ng build --prod'
+                dir('angular9-springboot-expensetracker/expense-tracker-frontend') {  // Putanja do frontend direktorijuma
+                    sh 'npm install'  // Instalira sve zavisnosti
+                    sh 'npx ng build --prod'  // Pravi produkcijsku verziju aplikacije
+                }
+            }
+        }
+
+        // Stage za kopiranje generisanih fajlova na server ili folder
+        stage('Deploy Frontend') {
+            steps {
+                dir('angular9-springboot-expensetracker/expense-tracker-frontend/dist/expense-tracker-frontend') {  // Putanja do dist direktorijuma
+                    sh 'echo "Deploying Frontend to /path/to/deployment/folder"'
+                    sh 'cp -r * /path/to/deployment/folder'  // Kopira fajlove na odgovarajući folder ili server
                 }
             }
         }
@@ -38,7 +48,7 @@ pipeline {
         // Stage za pokretanje Spring Boot aplikacije
         stage('Run Spring Boot') {
             steps {
-                dir('expensetracker') {  // Ovdje je promenjeno u pravi folder
+                dir('angular9-springboot-expensetracker/expensetracker') {  // Putanja do backend direktorijuma
                     sh 'nohup java -jar target/*.jar &'
                 }
             }
@@ -70,6 +80,4 @@ pipeline {
         }
     }
 }
-
-
 
