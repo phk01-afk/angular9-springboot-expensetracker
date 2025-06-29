@@ -1,4 +1,3 @@
-
 pipeline {
     agent any
 
@@ -8,6 +7,15 @@ pipeline {
     }
 
     stages {
+        stage('Provera strukture') {
+            steps {
+                sh 'echo "SADRŽAJ ROOT-a:"'
+                sh 'ls -lah'
+                sh 'echo "PRONALAZAK pom.xml:"'
+                sh 'find . -name "pom.xml"'
+            }
+        }
+
         stage('Build Backend') {
             steps {
                 dir('angular9-springboot-expensetracker') {
@@ -20,7 +28,7 @@ pipeline {
             steps {
                 dir('angular9-springboot-expensetracker') {
                     sh 'npm install'
-                    sh 'ng build --prod'
+                    sh 'npx ng build --prod'
                 }
             }
         }
@@ -48,3 +56,4 @@ pipeline {
         }
     }
 }
+
