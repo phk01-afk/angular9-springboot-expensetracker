@@ -28,7 +28,7 @@ pipeline {
         // Stage za build frontend-a (Angular)
         stage('Build Frontend') {
             steps {
-                dir('expense-tracker-frontend') {
+                dir('angular9-springboot-expensetracker/expense-tracker-frontend') {
                     sh 'npm install'
                     sh 'npx ng build --prod'
                 }
