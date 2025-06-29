@@ -1,3 +1,4 @@
+
 pipeline {
     agent any
 
@@ -9,20 +10,26 @@ pipeline {
     stages {
         stage('Build Backend') {
             steps {
-                sh 'mvn clean install'
+                dir('angular9-springboot-expensetracker') {
+                    sh 'mvn clean install'
+                }
             }
         }
 
         stage('Build Frontend') {
             steps {
-                sh 'npm install'
-                sh 'ng build --prod'
+                dir('angular9-springboot-expensetracker') {
+                    sh 'npm install'
+                    sh 'ng build --prod'
+                }
             }
         }
 
         stage('Run Spring Boot') {
             steps {
-                sh 'nohup java -jar target/*.jar &'
+                dir('angular9-springboot-expensetracker') {
+                    sh 'nohup java -jar target/*.jar &'
+                }
             }
         }
 
@@ -41,4 +48,3 @@ pipeline {
         }
     }
 }
-
