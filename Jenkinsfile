@@ -20,7 +20,7 @@ pipeline {
         stage('Build Backend') {
             steps {
                 dir('expensetracker') {  // Ovdje je promenjeno u pravi folder
-                    sh 'mvn clean install' -Dmaven.compiler.arguments="--add-exports=jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED"'
+                    sh 'mvn clean install -Dmaven.compiler.arguments="--add-exports=jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED"'
                 }
             }
         }
@@ -48,17 +48,28 @@ pipeline {
         stage('Health Check') {
             steps {
                 script {
-                    sleep(10)
-                    def response = sh(script: "curl -s -o /dev/null -w '%{http_code}' http://localhost:8080/api/v1/expenses", returnStdout: true).trim()
-                    if (response != '200') {
-                        error "Health check failed! Status code: ${response}"
-                    } else {
-                        echo "Backend is up and running!"
+                    def retries = 10
+                    def success = false
+                    while (retries > 0) {
+                        def response = sh(script: "curl -s -o /dev/null -w '%{http_code}' http://localhost:8080/api/v1/expenses", returnStdout: true).trim()
+                        if (response == '200') {
+                            echo "Backend is up and running!"
+                            success = true
+                            break
+                        } else {
+                            retries--
+                            echo "Health check failed. Retrying... (${retries} attempts left)"
+                            sleep(10)
+                        }
+                    }
+                    if (!success) {
+                        error "Health check failed after multiple attempts!"
                     }
                 }
             }
         }
     }
 }
+
 
 
