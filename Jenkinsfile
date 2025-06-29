@@ -21,7 +21,6 @@ pipeline {
 
         stage('Build Backend') {
             steps {
-                dir("${BACKEND_DIR}") {
                     sh 'mvn clean install'
                 }
             }
@@ -29,20 +28,18 @@ pipeline {
 
         stage('Build Frontend') {
             steps {
-                dir("${FRONTEND_DIR}") {
                     sh 'npm install'
                     sh 'ng build --prod'
                 }
             }
-        }
+        
 
         stage('Run Spring Boot App') {
             steps {
-                dir("${BACKEND_DIR}") {
                     sh 'nohup java -jar target/*.jar &'
                 }
             }
-        }
+        
 
         stage('Health Check') {
             steps {
@@ -58,4 +55,4 @@ pipeline {
             }
         }
     }
-}
+
