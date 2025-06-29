@@ -7,7 +7,7 @@ pipeline {
     }
 
     stages {
-        // Stage za proveru strukture direktorijuma
+        // Stage za verifikaciju trenutnog direktorijuma
         stage('Verifikacija direktorijuma') {
             steps {
                 sh 'echo "Trenutni direktorijum:"'
@@ -19,7 +19,7 @@ pipeline {
         // Stage za build backend-a (Spring Boot)
         stage('Build Backend') {
             steps {
-                dir('angular9-springboot-expensetracker') {
+                dir('expensetracker') {  // Ovdje je promenjeno u pravi folder
                     sh 'mvn clean install'
                 }
             }
@@ -30,7 +30,7 @@ pipeline {
             steps {
                 dir('angular9-springboot-expensetracker') {
                     sh 'npm install'
-                    sh 'ng build --prod'
+                    sh 'npx ng build --prod'
                 }
             }
         }
@@ -38,7 +38,7 @@ pipeline {
         // Stage za pokretanje Spring Boot aplikacije
         stage('Run Spring Boot') {
             steps {
-                dir('angular9-springboot-expensetracker') {
+                dir('expensetracker') {  // Ovdje je promenjeno u pravi folder
                     sh 'nohup java -jar target/*.jar &'
                 }
             }
@@ -60,4 +60,5 @@ pipeline {
         }
     }
 }
+
 
