@@ -35,16 +35,7 @@ pipeline {
             }
         }
 
-        // Stage za kopiranje generisanih fajlova na server ili folder
-        stage('Deploy Frontend') {
-            steps {
-                dir('angular9-springboot-expensetracker/expense-tracker-frontend/dist/expense-tracker-frontend') {  // Putanja do dist direktorijuma
-                    sh 'echo "Deploying Frontend to /path/to/deployment/folder"'
-                    sh 'cp -r * /path/to/deployment/folder'  // Kopira fajlove na odgovarajući folder ili server
-                }
-            }
-        }
-
+    
         // Stage za pokretanje Spring Boot aplikacije
         stage('Run Spring Boot') {
             steps {
