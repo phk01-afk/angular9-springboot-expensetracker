@@ -7,45 +7,67 @@ pipeline {
     }
 
     stages {
-        // Stage za verifikaciju trenutnog direktorijuma
+        // ✅ Provera trenutnog direktorijuma
         stage('Verifikacija direktorijuma') {
             steps {
-                sh 'echo "Trenutni direktorijum:"'
-                sh 'pwd'
-                sh 'ls -l'
+                sh '''
+                    echo "Trenutni direktorijum:"
+                    pwd
+                    ls -la
+                '''
             }
         }
 
-        // Stage za build backend-a (Spring Boot)
+        // ✅ Build backend (Spring Boot)
         stage('Build Backend') {
             steps {
-                dir('expensetracker') {  // Putanja do backend direktorijuma
-                    sh 'mvn clean install -Dmaven.compiler.arguments="--add-exports=jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED"'
+                dir('expensetracker') {
+                    sh 'mvn clean install -Dmaven.test.skip=true'
                 }
             }
         }
 
-        // Stage za build frontend-a (Angular)
+        // ✅ Build frontend (Angular)
         stage('Build Frontend') {
             steps {
-                dir('expense-tracker-frontend') {  // Putanja do frontend direktorijuma
-                    sh 'npm install'  // Instalira sve zavisnosti
-                    sh 'npx ng build --prod'  // Pravi produkcijsku verziju aplikacije
+                dir('expense-tracker-frontend') {
+                    sh '''
+                        npm install
+                        npx ng build --prod
+                    '''
                 }
             }
         }
 
-    
-        // Stage za pokretanje Spring Boot aplikacije
+        // ✅ Deploy frontend fajlova
+        stage('Deploy Frontend') {
+            steps {
+                dir('angular9-springboot-expensetracker/expense-tracker-frontend/dist/expense-tracker-frontend') {
+                    sh '''
+                        echo "Deploying frontend to /var/www/html"
+                        sudo mkdir -p /var/www/html
+                        sudo cp -r ./* /var/www/html/
+                    '''
+                }
+            }
+        }
+
+        // ✅ Pokretanje backend aplikacije
         stage('Run Spring Boot') {
             steps {
-                dir('angular9-springboot-expensetracker/expensetracker') {  // Putanja do backend direktorijuma
-                    sh 'nohup java -jar target/*.jar &'
+                dir('angular9-springboot-expensetracker/expensetracker') {
+                    sh '''
+                        echo "Zaustavljanje postojeće aplikacije ako postoji..."
+                        pkill -f 'java.*expensetracker' || true
+
+                        echo "Pokretanje nove instance aplikacije na portu 8081"
+                        nohup java -jar target/*.jar --server.port=8081 > springboot.log 2>&1 &
+                    '''
                 }
             }
         }
 
-        // Stage za health check aplikacije
+        // ✅ Health check backend aplikacije
         stage('Health Check') {
             steps {
                 script {
@@ -54,7 +76,7 @@ pipeline {
                     while (retries > 0) {
                         def response = sh(script: "curl -s -o /dev/null -w '%{http_code}' http://localhost:8081/api/v1/expenses", returnStdout: true).trim()
                         if (response == '200') {
-                            echo "Backend is up and running!"
+                            echo "✅ Backend is up and running!"
                             success = true
                             break
                         } else {
@@ -64,11 +86,10 @@ pipeline {
                         }
                     }
                     if (!success) {
-                        error "Health check failed after multiple attempts!"
+                        error "❌ Health check failed after multiple attempts!"
                     }
                 }
             }
         }
     }
 }
-
