@@ -45,8 +45,8 @@ pipeline {
                 dir('angular9-springboot-expensetracker/expense-tracker-frontend/dist/expense-tracker-frontend') {
                     sh '''
                         echo "Deploying frontend to /var/www/html"
-                        sudo mkdir -p /var/www/html
-                        sudo cp -r ./* /var/www/html/
+                        mkdir -p /var/www/html
+                         cp -r ./* /var/www/html/
                     '''
                 }
             }
