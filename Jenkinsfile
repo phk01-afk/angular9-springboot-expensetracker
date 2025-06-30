@@ -41,7 +41,7 @@ pipeline {
                 dir('angular9-springboot-expensetracker/expense-tracker-frontend/dist/expense-tracker-frontend') {  // Putanja do generisanog dist direktorijuma
                     sh '''
                         echo "Deploying frontend to /home/jenkins/frontend-dist"
-                        mkdir -p /home/jenkins/frontend-dist
+                       sudo mkdir -p /home/jenkins/frontend-dist
                         cp -r ./* /home/jenkins/frontend-dist/
                     '''
                 }
