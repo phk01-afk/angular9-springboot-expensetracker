@@ -19,7 +19,7 @@ pipeline {
         // Stage za build backend-a (Spring Boot)
         stage('Build Backend') {
             steps {
-                dir('angular9-springboot-expensetracker/expensetracker') {  // Putanja do backend direktorijuma
+                dir('expensetracker') {  // Putanja do backend direktorijuma
                     sh 'mvn clean install -Dmaven.compiler.arguments="--add-exports=jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED"'
                 }
             }
@@ -28,7 +28,7 @@ pipeline {
         // Stage za build frontend-a (Angular)
         stage('Build Frontend') {
             steps {
-                dir('angular9-springboot-expensetracker/expense-tracker-frontend') {  // Putanja do frontend direktorijuma
+                dir('expense-tracker-frontend') {  // Putanja do frontend direktorijuma
                     sh 'npm install'  // Instalira sve zavisnosti
                     sh 'npx ng build --prod'  // Pravi produkcijsku verziju aplikacije
                 }
