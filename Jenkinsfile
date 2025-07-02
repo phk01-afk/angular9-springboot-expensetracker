@@ -7,7 +7,6 @@ pipeline {
     }
 
     stages {
-        // Stage za verifikaciju trenutnog direktorijuma
         stage('Verifikacija direktorijuma') {
             steps {
                 sh 'echo "Trenutni direktorijum:"'
@@ -16,48 +15,53 @@ pipeline {
             }
         }
 
-        // Stage za build backend-a (Spring Boot)
         stage('Build Backend') {
             steps {
-                dir('expensetracker') {  // Putanja do backend direktorijuma
-                    sh 'mvn clean install -Dmaven.compiler.arguments="--add-exports=jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED"'
+                dir('expensetracker') {
+                    sh 'mvn clean install -Dmaven.test.skip=true -Dmaven.compiler.arguments="--add-exports=jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED"'
                 }
             }
         }
 
-        // Stage za build frontend-a (Angular)
         stage('Build Frontend') {
             steps {
-                dir('expense-tracker-frontend') {  // Putanja do frontend direktorijuma
-                    sh 'npm install'  // Instalira sve zavisnosti
-                    sh 'npx ng build --prod'  // Pravi produkcijsku verziju aplikacije
+                dir('expense-tracker-frontend') {
+                    sh 'npm install'
+                    sh 'npx ng build --prod'
                 }
             }
         }
 
-        // Stage za deploy frontend-a bez sudo
-        stage('Deploy Frontend') {
+        stage('Run Spring Boot') {
             steps {
-                dir('angular9-springboot-expensetracker/expense-tracker-frontend/dist/expense-tracker-frontend') {  // Putanja do generisanog dist direktorijuma
+                script {
                     sh '''
-                        echo "Deploying frontend to /home/jenkins/frontend-dist"
-                       sudo mkdir -p /home/jenkins/frontend-dist
-                        cp -r ./* /home/jenkins/frontend-dist/
+                        echo "Zaustavljam prethodnu instancu backend-a (ako postoji)..."
+                        pkill -f 'java -jar' || true
+
+                        echo "Pokrećem backend..."
+                        cd expensetracker
+                        nohup java -jar target/*.jar > ../../backend.log 2>&1 &
                     '''
                 }
             }
         }
 
-        // Stage za pokretanje Spring Boot aplikacije
-        stage('Run Spring Boot') {
+        stage('Run Angular Frontend') {
             steps {
-                dir('angular9-springboot-expensetracker/expensetracker') {  // Putanja do backend direktorijuma
-                    sh 'nohup java -jar target/*.jar &'
+                script {
+                    sh '''
+                        echo "Zaustavljam prethodni ng serve (ako postoji)..."
+                        pkill -f 'ng serve' || true
+
+                        echo "Pokrećem Angular frontend..."
+                        cd expense-tracker-frontend
+                        nohup npx ng serve --port 4200 --host 0.0.0.0 > ../../frontend.log 2>&1 &
+                    '''
                 }
             }
         }
 
-        // Stage za health check aplikacije
         stage('Health Check') {
             steps {
                 script {
