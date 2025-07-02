@@ -2,11 +2,10 @@ pipeline {
     agent any
 
     environment {
-        BACKEND_DIR = "backend"
-        FRONTEND_DIR = "frontend"
+        BACKEND_DIR = "expense-tracker"               // ispravljeno!
+        FRONTEND_DIR = "expense-tracker-frontend"     // ispravljeno!
         JAR_NAME = "expensetracker-0.0.1-SNAPSHOT.jar"
-        FRONTEND_DEPLOY_PATH = "/home/jenkins/frontend-dist"
-        BACKEND_PORT = "9090"
+        BACKEND_PORT = "9091"
     }
 
     stages {
@@ -33,12 +32,10 @@ pipeline {
             }
         }
 
-        stage('Deploy Backend') {
+        stage('Run Backend') {
             steps {
                 script {
-                    // kill old process if running
                     sh "pkill -f '${JAR_NAME}' || true"
-                    // run with custom port
                     sh """
                         nohup java -jar ${BACKEND_DIR}/target/${JAR_NAME} \
                         --server.port=${BACKEND_PORT} > backend.log 2>&1 &
@@ -47,14 +44,10 @@ pipeline {
             }
         }
 
-        stage('Deploy Frontend') {
+        stage('Run Frontend (Dev Server)') {
             steps {
-                script {
-                    def distDir = "${FRONTEND_DIR}/dist/frontend"
-                    def targetDir = "${FRONTEND_DEPLOY_PATH}"
-                    sh "mkdir -p ${targetDir}"
-                    sh "rm -rf ${targetDir}/*"
-                    sh "cp -r ${distDir}/* ${targetDir}/"
+                dir("${FRONTEND_DIR}") {
+                    sh 'nohup npm run start -- --port 4200 > frontend.log 2>&1 &'
                 }
             }
         }
@@ -62,8 +55,12 @@ pipeline {
         stage('Health Check') {
             steps {
                 script {
-                    sleep 10
+                    sleep 15
+                    echo "Testing backend on http://localhost:${BACKEND_PORT}/api/v1/expenses"
                     sh "curl -f http://localhost:${BACKEND_PORT}/api/v1/expenses || exit 1"
+
+                    echo "Testing frontend on http://localhost:4200"
+                    sh "curl -f http://localhost:4200 || exit 1"
                 }
             }
         }
@@ -71,10 +68,10 @@ pipeline {
 
     post {
         success {
-            echo "✅ Deployment successful on port ${BACKEND_PORT}!"
+            echo "✅ Backend is running on port ${BACKEND_PORT}, frontend on port 4200"
         }
         failure {
-            echo "❌ Deployment failed!"
+            echo "❌ Pipeline failed. Check backend.log or frontend.log for details."
         }
     }
 }
