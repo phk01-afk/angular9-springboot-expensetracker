@@ -8,12 +8,6 @@ tools {
     }
 
 
-    environment {
-        BACKEND_DIR = "expense-tracker"               // ispravljeno!
-        FRONTEND_DIR = "expense-tracker-frontend"     // ispravljeno!
-        JAR_NAME = "expensetracker-0.0.1-SNAPSHOT.jar"
-        BACKEND_PORT = "9091"
-    }
 
     stages {
         stage('Clone Repo') {
@@ -24,7 +18,7 @@ tools {
 
         stage('Build Backend') {
             steps {
-                dir("${BACKEND_DIR}") {
+                dir("expensetracker") {
                     sh 'mvn clean install -DskipTests'
                 }
             }
@@ -32,7 +26,7 @@ tools {
 
         stage('Build Frontend') {
             steps {
-                dir("${FRONTEND_DIR}") {
+                dir("expense-tracker-fronted") {
                     sh 'npm install'
                     sh 'ng build --prod'
                 }
