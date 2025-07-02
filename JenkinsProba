@@ -18,7 +18,7 @@ tools {
 
         stage('Build Backend') {
             steps {
-                dir("expensetracker") {
+                dir('expensetracker') {
                     sh 'mvn clean install -DskipTests'
                 }
             }
@@ -26,7 +26,7 @@ tools {
 
         stage('Build Frontend') {
             steps {
-                dir("expense-tracker-fronted") {
+                dir('expense-tracker-fronten') {
                     sh 'npm install'
                     sh 'ng build --prod'
                 }
