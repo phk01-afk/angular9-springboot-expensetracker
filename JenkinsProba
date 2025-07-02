@@ -1,6 +1,13 @@
 pipeline {
     agent any
 
+
+tools {
+        maven 'Maven 3'       // ovo si dodao u Global Tool Configuration
+        nodejs 'Node 12'      // NodeJS koji si tamo dodao
+    }
+
+
     environment {
         BACKEND_DIR = "expense-tracker"               // ispravljeno!
         FRONTEND_DIR = "expense-tracker-frontend"     // ispravljeno!
