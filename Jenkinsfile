@@ -27,7 +27,7 @@ pipeline {
             steps {
                 dir('expense-tracker-frontend') {
                     sh 'npm install'
-                    sh 'npx ng build --prod'
+                    sh 'ng serve --open'
                 }
             }
         }
