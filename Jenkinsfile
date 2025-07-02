@@ -47,20 +47,7 @@ pipeline {
             }
         }
 
-        stage('Run Angular Frontend') {
-            steps {
-                script {
-                    sh '''
-                        echo "Zaustavljam prethodni ng serve (ako postoji)..."
-                        pkill -f 'ng serve' || true
-
-                        echo "Pokrećem Angular frontend..."
-                        cd expense-tracker-frontend
-                        nohup npx ng serve --port 4200 --host 0.0.0.0 > ../../frontend.log 2>&1 &
-                    '''
-                }
-            }
-        }
+      
 
         stage('Health Check') {
             steps {
