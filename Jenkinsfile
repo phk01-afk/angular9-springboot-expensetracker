@@ -7,6 +7,7 @@ pipeline {
     }
 
     stages {
+
         stage('Verifikacija direktorijuma') {
             steps {
                 sh 'echo "Trenutni direktorijum:"'
@@ -18,7 +19,7 @@ pipeline {
         stage('Build Backend') {
             steps {
                 dir('expensetracker') {
-                    sh 'mvn clean install -Dmaven.test.skip=true -Dmaven.compiler.arguments="--add-exports=jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED"'
+                    sh 'mvn clean install -Dmaven.compiler.arguments="--add-exports=jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED" -DskipTests'
                 }
             }
         }
@@ -27,27 +28,26 @@ pipeline {
             steps {
                 dir('expense-tracker-frontend') {
                     sh 'npm install'
-                    sh 'ng serve --open'
+                    sh 'npx ng build --prod'
                 }
             }
         }
 
-        stage('Run Spring Boot') {
+        stage('Run Backend') {
             steps {
-                script {
-                    sh '''
-                        echo "Zaustavljam prethodnu instancu backend-a (ako postoji)..."
-                        pkill -f 'java -jar' || true
-
-                        echo "Pokrećem backend..."
-                        cd expensetracker
-                        nohup java -jar target/*.jar > ../../backend.log 2>&1 &
-                    '''
+                dir('expensetracker') {
+                    sh 'nohup java -jar target/*.jar &'
                 }
             }
         }
 
-      
+        stage('Run Frontend') {
+            steps {
+                dir('expense-tracker-frontend') {
+                    sh 'nohup npx ng serve --port 4200 --host 0.0.0.0 &'
+                }
+            }
+        }
 
         stage('Health Check') {
             steps {
