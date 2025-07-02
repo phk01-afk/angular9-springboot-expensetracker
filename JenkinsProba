@@ -1,0 +1,80 @@
+pipeline {
+    agent any
+
+    environment {
+        BACKEND_DIR = "backend"
+        FRONTEND_DIR = "frontend"
+        JAR_NAME = "expensetracker-0.0.1-SNAPSHOT.jar"
+        FRONTEND_DEPLOY_PATH = "/home/jenkins/frontend-dist"
+        BACKEND_PORT = "9090"
+    }
+
+    stages {
+        stage('Clone Repo') {
+            steps {
+                git branch: 'patch-1', url: 'https://github.com/phk01-afk/angular9-springboot-expensetracker.git'
+            }
+        }
+
+        stage('Build Backend') {
+            steps {
+                dir("${BACKEND_DIR}") {
+                    sh 'mvn clean install -DskipTests'
+                }
+            }
+        }
+
+        stage('Build Frontend') {
+            steps {
+                dir("${FRONTEND_DIR}") {
+                    sh 'npm install'
+                    sh 'ng build --prod'
+                }
+            }
+        }
+
+        stage('Deploy Backend') {
+            steps {
+                script {
+                    // kill old process if running
+                    sh "pkill -f '${JAR_NAME}' || true"
+                    // run with custom port
+                    sh """
+                        nohup java -jar ${BACKEND_DIR}/target/${JAR_NAME} \
+                        --server.port=${BACKEND_PORT} > backend.log 2>&1 &
+                    """
+                }
+            }
+        }
+
+        stage('Deploy Frontend') {
+            steps {
+                script {
+                    def distDir = "${FRONTEND_DIR}/dist/frontend"
+                    def targetDir = "${FRONTEND_DEPLOY_PATH}"
+                    sh "mkdir -p ${targetDir}"
+                    sh "rm -rf ${targetDir}/*"
+                    sh "cp -r ${distDir}/* ${targetDir}/"
+                }
+            }
+        }
+
+        stage('Health Check') {
+            steps {
+                script {
+                    sleep 10
+                    sh "curl -f http://localhost:${BACKEND_PORT}/api/v1/expenses || exit 1"
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            echo "✅ Deployment successful on port ${BACKEND_PORT}!"
+        }
+        failure {
+            echo "❌ Deployment failed!"
+        }
+    }
+}
