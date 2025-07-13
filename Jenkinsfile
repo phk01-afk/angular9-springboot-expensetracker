@@ -23,14 +23,22 @@ pipeline {
             }
         }
 
-        stage('Run Spring Boot') {
-            steps {
-                dir('expensetracker') {
-                    sh 'pkill -f "java -jar" || true'
-                    sh 'nohup java -jar target/*.jar > backend.log 2>&1 &'
-                }
-            }
+  stage('Run Spring Boot') {
+    steps {
+        dir('angular9-springboot-expensetracker/expensetracker') {
+            sh '''
+                echo "✔ Provera .jar fajla:"
+                ls -l target/*.jar || { echo "❌ JAR fajl nije pronađen!"; exit 1; }
+
+                echo "⚙️  Pokretanje Spring Boot aplikacije..."
+                pkill -f 'expensetracker-v1.jar' || true  # Zaustavi prethodnu instancu ako postoji
+                nohup java -jar target/expensetracker-v1.jar > backend.log 2>&1 &
+                echo "✅ Backend pokrenut!"
+            '''
         }
+    }
+}
+
 
         stage('Health Check Backend') {
             steps {
