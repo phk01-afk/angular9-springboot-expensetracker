@@ -39,7 +39,7 @@ pipeline {
 
                         retries=5
                         while [ $retries -gt 0 ]; do
-                            response=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:9091/api/v1/expenses)
+                            response=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/api/v1/expenses)
                             if [ "$response" -eq 200 ]; then
                                 echo "✅ Backend is up and running!"
                                 break
@@ -65,7 +65,7 @@ pipeline {
                     def retries = 10
                     def success = false
                     while (retries > 0) {
-                        def response = sh(script: "curl -s -o /dev/null -w '%{http_code}' http://localhost:9091/api/v1/expenses", returnStdout: true).trim()
+                        def response = sh(script: "curl -s -o /dev/null -w '%{http_code}' http://localhost:8080/api/v1/expenses", returnStdout: true).trim()
                         if (response == '200') {
                             echo "✅ Backend is up and running!"
                             success = true
