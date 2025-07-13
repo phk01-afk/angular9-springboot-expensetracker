@@ -25,7 +25,7 @@ pipeline {
 
   stage('Run Spring Boot') {
     steps {
-        dir('angular9-springboot-expensetracker/expensetracker') {
+        dir('expensetracker') {
             sh '''
                 echo "✔ Provera .jar fajla:"
                 ls -l target/*.jar || { echo "❌ JAR fajl nije pronađen!"; exit 1; }
