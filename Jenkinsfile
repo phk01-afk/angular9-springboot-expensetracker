@@ -34,7 +34,8 @@ pipeline {
                         pkill -f 'expensetracker-v1.jar' || true
                         nohup java -jar target/expensetracker-v1.jar > backend.log 2>&1 &
 
-                        sleep 10
+                        echo "⏳ Čekam da backend startuje..."
+                        sleep 25
 
                         retries=5
                         while [ $retries -gt 0 ]; do
