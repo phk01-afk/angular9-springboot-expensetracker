@@ -23,7 +23,7 @@ pipeline {
             }
         }
 
-  stage('Run Spring Boot') {
+stage('Run Spring Boot') {
     steps {
         dir('expensetracker') {
             sh '''
@@ -33,12 +33,33 @@ pipeline {
                 echo "⚙️  Pokretanje Spring Boot aplikacije..."
                 pkill -f 'expensetracker-v1.jar' || true  # Zaustavi prethodnu instancu ako postoji
                 nohup java -jar target/expensetracker-v1.jar > backend.log 2>&1 &
-                ps aux | grep 'expensetracker-v1.jar'
-                echo "✅ Backend pokrenut!"
+
+                # Daje aplikaciji vreme da se pokrene
+                sleep 10
+
+                # Provera da li je backend aplikacija dostupna na portu 8081
+                retries=5
+                while [ $retries -gt 0 ]; do
+                    response=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8081/api/v1/expenses)
+                    if [ "$response" -eq 200 ]; then
+                        echo "✅ Backend is up and running!"
+                        break
+                    else
+                        retries=$((retries - 1))
+                        echo "❌ Backend not available. Retrying... ($retries attempts left)"
+                        sleep 10
+                    fi
+                done
+
+                if [ $retries -eq 0 ]; then
+                    echo "❌ Backend failed to start. Please check the logs for more details."
+                    exit 1
+                fi
             '''
         }
     }
 }
+
 
 
         stage('Health Check Backend') {
