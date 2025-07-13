@@ -33,6 +33,7 @@ pipeline {
                 echo "⚙️  Pokretanje Spring Boot aplikacije..."
                 pkill -f 'expensetracker-v1.jar' || true  # Zaustavi prethodnu instancu ako postoji
                 nohup java -jar target/expensetracker-v1.jar > backend.log 2>&1 &
+                ps aux | grep 'expensetracker-v1.jar'
                 echo "✅ Backend pokrenut!"
             '''
         }
