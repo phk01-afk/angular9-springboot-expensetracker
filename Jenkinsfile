@@ -9,7 +9,7 @@ pipeline {
     stages {
         stage('Verifikacija direktorijuma') {
             steps {
-                sh 'echo "Trenutni direktorijum:"'
+                sh 'echo "📁 Trenutni direktorijum:"'
                 sh 'pwd'
                 sh 'ls -l'
             }
@@ -23,44 +23,40 @@ pipeline {
             }
         }
 
-stage('Run Spring Boot') {
-    steps {
-        dir('expensetracker') {
-            sh '''
-                echo "✔ Provera .jar fajla:"
-                ls -l target/*.jar || { echo "❌ JAR fajl nije pronađen!"; exit 1; }
+        stage('Run Spring Boot') {
+            steps {
+                dir('expensetracker') {
+                    sh '''
+                        echo "✔ Provera .jar fajla:"
+                        ls -l target/*.jar || { echo "❌ JAR fajl nije pronađen!"; exit 1; }
 
-                echo "⚙️  Pokretanje Spring Boot aplikacije..."
-                pkill -f 'expensetracker-v1.jar' || true  # Zaustavi prethodnu instancu ako postoji
-                nohup java -jar target/expensetracker-v1.jar > backend.log 2>&1 &
+                        echo "⚙️  Pokretanje Spring Boot aplikacije..."
+                        pkill -f 'expensetracker-v1.jar' || true
+                        nohup java -jar target/expensetracker-v1.jar > backend.log 2>&1 &
 
-                # Daje aplikaciji vreme da se pokrene
-                sleep 10
-
-                # Provera da li je backend aplikacija dostupna na portu 8081
-                retries=5
-                while [ $retries -gt 0 ]; do
-                    response=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8081/api/v1/expenses)
-                    if [ "$response" -eq 200 ]; then
-                        echo "✅ Backend is up and running!"
-                        break
-                    else
-                        retries=$((retries - 1))
-                        echo "❌ Backend not available. Retrying... ($retries attempts left)"
                         sleep 10
-                    fi
-                done
 
-                if [ $retries -eq 0 ]; then
-                    echo "❌ Backend failed to start. Please check the logs for more details."
-                    exit 1
-                fi
-            '''
+                        retries=5
+                        while [ $retries -gt 0 ]; do
+                            response=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:9091/api/v1/expenses)
+                            if [ "$response" -eq 200 ]; then
+                                echo "✅ Backend is up and running!"
+                                break
+                            else
+                                retries=$((retries - 1))
+                                echo "⏳ Backend not available. Retrying... ($retries attempts left)"
+                                sleep 10
+                            fi
+                        done
+
+                        if [ $retries -eq 0 ]; then
+                            echo "❌ Backend failed to start. Please check the logs for more details."
+                            exit 1
+                        fi
+                    '''
+                }
+            }
         }
-    }
-}
-
-
 
         stage('Health Check Backend') {
             steps {
@@ -68,7 +64,7 @@ stage('Run Spring Boot') {
                     def retries = 10
                     def success = false
                     while (retries > 0) {
-                        def response = sh(script: "curl -s -o /dev/null -w '%{http_code}' http://localhost:8081/api/v1/expenses", returnStdout: true).trim()
+                        def response = sh(script: "curl -s -o /dev/null -w '%{http_code}' http://localhost:9091/api/v1/expenses", returnStdout: true).trim()
                         if (response == '200') {
                             echo "✅ Backend is up and running!"
                             success = true
@@ -97,4 +93,5 @@ stage('Run Spring Boot') {
         }
     }
 }
+
 
