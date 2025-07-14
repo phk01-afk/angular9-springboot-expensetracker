@@ -44,6 +44,20 @@ pipeline {
             }
         }
 
+
+        
+        stage('Build & Serve Frontend') {
+            steps {
+                dir('angular9-springboot-expensetracker/expense-tracker-frontend') {
+                    sh 'npm install'
+                    sh 'pkill -f "ng serve" || true'
+                    sh 'nohup npx ng serve --host 0.0.0.0 --port 4200 > frontend.log 2>&1 &'
+                }
+            }
+        }
+    }
+}
+
         stage('Health Check Backend') {
             steps {
                 script {
@@ -68,15 +82,5 @@ pipeline {
             }
         }
 
-        stage('Build & Serve Frontend') {
-            steps {
-                dir('angular9-springboot-expensetracker/expense-tracker-frontend') {
-                    sh 'npm install'
-                    sh 'pkill -f "ng serve" || true'
-                    sh 'nohup npx ng serve --host 0.0.0.0 --port 4200 > frontend.log 2>&1 &'
-                }
-            }
-        }
-    }
-}
-
+      
+     
