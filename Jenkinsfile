@@ -20,7 +20,7 @@ pipeline {
 
         stage('Build Backend') {
             steps {
-                dir('angular9-springboot-expensetracker/expensetracker') {
+                dir('expensetracker') {
                     sh 'mvn clean install -Dmaven.test.skip=true -Dmaven.compiler.arguments="--add-exports=jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED"'
                 }
             }
