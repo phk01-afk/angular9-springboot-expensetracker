@@ -35,7 +35,7 @@ pipeline {
 
                         echo "⚙️  Pokretanje Spring Boot aplikacije..."
                         pkill -f 'expensetracker-v1.jar' || true
-                        nohup java -jar target/expensetracker-v1.jar > backend.log 2>&1 &
+                        sh 'java -jar target/expensetracker-v1.jar > backend.log 2>&1 &'
 
                         echo "⏳ Čekam da backend startuje..."
                         sleep 25
